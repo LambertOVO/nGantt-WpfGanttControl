@@ -97,6 +97,7 @@ namespace nGantt
             ganttChartData.TimeLines.Add(timeline);
             return timeline;
         }
+      
 
         public void ClearGantt()
         {

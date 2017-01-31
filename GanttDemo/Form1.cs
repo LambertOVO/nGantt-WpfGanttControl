@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using nGantt.GanttChart;
 using nGantt.PeriodSplitter;
 namespace GanttDemo
@@ -28,14 +29,28 @@ namespace GanttDemo
         List<GanttRow> RowList = new List<GanttRow>();
         List<GanttRowGroup> RowGroupList = new List<GanttRowGroup>();
         List<zadania> Kolejka = new List<zadania>();
+
+        Thread watek_1;
+        Thread watek_2;
+        delegate void metoda_do_modyfikacji1(string tekst);
+        delegate void metoda_do_modyfikacji2(string tekst);
+        metoda_do_modyfikacji1 aktualna_metoda_do_modyfikacji1;
+        metoda_do_modyfikacji2 aktualna_metoda_do_modyfikacji2;
+        private Thread cpuThread;
+        private double[] cpuArray = new double[60];
+        private Rectangle tabArea;
+        private RectangleF tabTextArea;
+        
+
         public Form1()
         {
             InitializeComponent();
+            Start();
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            GantLenght = 2;
+            GantLenght = 1;
             dateTimePicker.Value = DateTime.Now;
             DateTime minDate = dateTimePicker.Value.Date;
             DateTime maxDate = minDate.AddDays(GantLenght);
@@ -59,7 +74,44 @@ namespace GanttDemo
             ganttControl1.SelectionContextMenuItems = selectionContextMenuItems;
 
         }
+        //zdarzenie klikniecia uruchamiajace watki
+        private void Start()
+        {
+            watek_1 = new Thread(watek_1_setup);
+            watek_2 = new Thread(watek_2_setup);
+            aktualna_metoda_do_modyfikacji1 = new metoda_do_modyfikacji1(wpisywanie_do_textboxu1);
+            aktualna_metoda_do_modyfikacji2 = new metoda_do_modyfikacji2(wpisywanie_do_textboxu2);
+            watek_1.Start();
+            watek_2.Start();
+        }
 
+        //metoda na ktora wskazuje a_m_d_m
+        void wpisywanie_do_textboxu1(string tekst)
+        {
+            textBox1.Text += tekst;
+        }
+        void wpisywanie_do_textboxu2(string tekst)
+        {
+            textBox2.Text += tekst;
+        }
+
+        void watek_1_setup()
+        {
+            while (true)
+            {
+                Thread.Sleep(3000);
+                this.Invoke(aktualna_metoda_do_modyfikacji1, "pierwszy wątek, ");
+            }
+        }
+
+        void watek_2_setup()
+        {
+            while (true)
+            {
+                Thread.Sleep(3000);
+                this.Invoke(aktualna_metoda_do_modyfikacji2, "drugi wątek, ");
+            }
+        }
         private void NewClicked(Period selectionPeriod)
         {
             MessageBox.Show("New clicked for task " + selectionPeriod.Start.ToString() + " -> " + selectionPeriod.End.ToString());
@@ -93,6 +145,7 @@ namespace GanttDemo
                 return new System.Windows.Media.SolidColorBrush(System.Windows.Media.Colors.Transparent);
         }
 
+        
         private void CreateData(DateTime minDate, DateTime maxDate)
         {
             // Set max and min dates
@@ -101,39 +154,44 @@ namespace GanttDemo
             // Create timelines and define how they should be presented
             //ganttControl1.CreateTimeLine(new PeriodYearSplitter(minDate, maxDate), FormatYear);
             //ganttControl1.CreateTimeLine(new PeriodMonthSplitter(minDate, maxDate), FormatMonth);
-            var gridLineTimeLine = ganttControl1.CreateTimeLine(new PeriodYearSplitter(minDate, maxDate), FormatYear);
-            ganttControl1.CreateTimeLine(new PeriodDaySplitter(minDate, maxDate), FormatDayName);
-
+            /////var gridLineTimeLine = ganttControl1.CreateTimeLine(new PeriodDaySplitter(minDate, maxDate), FormatDayName);
+            //ganttControl1.CreateTimeLine(new PeriodDaySplitter(minDate, maxDate), FormatDayName);
+            ganttControl1.CreateTimeLine(new PeriodYearSplitter(minDate, maxDate), FormatYear);
+            var gridLineTimeLine = ganttControl1.CreateTimeLine(new PeriodHourSplitter(minDate, maxDate), FormatHour);
             // Set the timeline to atatch gridlines to
             ganttControl1.SetGridLinesTimeline(gridLineTimeLine, DetermineBackground);
 
             // Create and data
+            RowGroupList.Add(ganttControl1.CreateGanttRowGroup());
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[0], ""));
+
             RowGroupList.Add(ganttControl1.CreateGanttRowGroup("HeaderdGanttRowGroup"));
-            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[0], "GanttRow 1")); 
-            ganttControl1.AddGanttTask(RowList[0], new GanttTask() { Start = new DateTime(2016,12,05,13,24,00), End = new DateTime(2016, 12, 05, 13, 44, 00), Name = "GanttRow 1:GanttTask 1", TaskProgressVisibility = System.Windows.Visibility.Hidden });
-            ganttControl1.AddGanttTask(RowList[0], new GanttTask() { Start = DateTime.Now.AddHours(3), End = DateTime.Now.AddHours(5), Name = "GanttRow 1:GanttTask 2" });
-            ganttControl1.AddGanttTask(RowList[0], new GanttTask() { Start = DateTime.Now.AddHours(4), End = DateTime.Now.AddHours(8), Name = "GanttRow 1:GanttTask 3" });
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[1], "GanttRow 1")); 
+            ganttControl1.AddGanttTask(RowList[1], new GanttTask() { Start = new DateTime(2016,12,20,13,24,00), End = new DateTime(2016, 12, 20, 13, 44, 00), Name = "GanttRow 1:GanttTask 1", TaskProgressVisibility = System.Windows.Visibility.Hidden });
+            ganttControl1.AddGanttTask(RowList[1], new GanttTask() { Start = DateTime.Now.AddHours(3), End = DateTime.Now.AddHours(5), Name = "GanttRow 1:GanttTask 2" });
+            ganttControl1.AddGanttTask(RowList[1], new GanttTask() { Start = DateTime.Now.AddHours(4), End = DateTime.Now.AddHours(8), Name = "GanttRow 1:GanttTask 3" });
 
+            
             RowGroupList.Add(new ExpandableGanttRowGroup());
-            RowGroupList[1] = ganttControl1.CreateGanttRowGroup("ExpandableGanttRowGroup", true);
+            RowGroupList[2] = ganttControl1.CreateGanttRowGroup("ExpandableGanttRowGroup", true);
 
-            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[1], "GanttRow 2"));
-            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[1], "GanttRow 3"));
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[2], "GanttRow 2"));
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[2], "GanttRow 3"));
 
-            ganttControl1.AddGanttTask(RowList[1], new GanttTask() { Start = DateTime.Now.AddHours(1), End = DateTime.Now.AddHours(4), Name = "GanttRow 2:GanttTask 1" });
-            ganttControl1.AddGanttTask(RowList[1], new GanttTask() { Start = DateTime.Now.AddHours(2), End = DateTime.Now.AddHours(3), Name = "GanttRow 2:GanttTask 2" });
-            ganttControl1.AddGanttTask(RowList[1], new GanttTask() { Start = DateTime.Now.AddHours(3), End = DateTime.Now.AddHours(4), Name = "GanttRow 2:GanttTask 3", PercentageCompleted = 0.375 });
-            ganttControl1.AddGanttTask(RowList[2], new GanttTask() { Start = DateTime.Now.AddHours(4), End = DateTime.Now.AddHours(5), Name = "GanttRow 3:GanttTask 1", PercentageCompleted = 0.5 });
+            ganttControl1.AddGanttTask(RowList[2], new GanttTask() { Start = DateTime.Now.AddHours(1), End = DateTime.Now.AddHours(4), Name = "GanttRow 2:GanttTask 1" });
+            ganttControl1.AddGanttTask(RowList[2], new GanttTask() { Start = DateTime.Now.AddHours(2), End = DateTime.Now.AddHours(3), Name = "GanttRow 2:GanttTask 2" });
+            ganttControl1.AddGanttTask(RowList[2], new GanttTask() { Start = DateTime.Now.AddHours(3), End = DateTime.Now.AddHours(4), Name = "GanttRow 2:GanttTask 3", PercentageCompleted = 0.375 });
+            ganttControl1.AddGanttTask(RowList[3], new GanttTask() { Start = DateTime.Now.AddHours(4), End = DateTime.Now.AddHours(5), Name = "GanttRow 3:GanttTask 1", PercentageCompleted = 0.5 });
 
             RowGroupList.Add(ganttControl1.CreateGanttRowGroup());
-            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[2], "GanttRow 4"));
-            ganttControl1.AddGanttTask(RowList[3], new GanttTask() { Start = DateTime.Now.AddHours(7), End = DateTime.Now.AddHours(8), Name = "GanttRow 4:GanttTask 1", PercentageCompleted = 1 });
-            ganttControl1.AddGanttTask(RowList[3], new GanttTask() { Start = DateTime.Now.AddHours(4), End = DateTime.Now.AddHours(7), Name = "GanttRow 4:GanttTask 2" });
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[3], "GanttRow 4"));
+            ganttControl1.AddGanttTask(RowList[4], new GanttTask() { Start = DateTime.Now.AddHours(7), End = DateTime.Now.AddHours(8), Name = "GanttRow 4:GanttTask 1", PercentageCompleted = 1 });
+            ganttControl1.AddGanttTask(RowList[4], new GanttTask() { Start = DateTime.Now.AddHours(4), End = DateTime.Now.AddHours(7), Name = "GanttRow 4:GanttTask 2" });
             ReadFile();
             AddRow();
             foreach (var s in Kolejka)
             {
-                AddBlock(s.start, s.end, 5, s.nr.ToString() + ". Task");
+                AddBlock(s.start, s.end, 6, s.nr.ToString() + ". Task");
             }
         }
     
@@ -155,7 +213,15 @@ namespace GanttDemo
         {
             return period.Start.Day.ToString();
         }
+        private string FormatHour(Period period)
+        {
+            return period.Start.Hour.ToString();
+        }
 
+        private string FormatMinute(Period period)
+        {
+            return period.Start.Minute.ToString();
+        }
         private string FormatDayName(Period period)
         {
             return period.Start.DayOfWeek.ToString();
@@ -186,11 +252,11 @@ namespace GanttDemo
 
         private void AddRow_Click(object sender, EventArgs e)
         {
-            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[1], "GanttRow 3"));
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[2], "Added row"));
         }
         private void AddRow()
         {
-            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[1], "New"));
+            RowList.Add(ganttControl1.CreateGanttRow(RowGroupList[2], "New"));
         }
 
         private void AddBlock_Clik(object sender, EventArgs e)
@@ -200,7 +266,8 @@ namespace GanttDemo
         private void AddBlock(int start, int end, int machinenr, string name)
         {
             // ganttControl1.AddGanttTask(RowList[machinenr - 1], new GanttTask() { Start = DateTime.Now.AddHours(start), End = DateTime.Now.AddHours(end), Name = "GanttRow 2:GanttTask 1" });
-             ganttControl1.AddGanttTask(RowList[machinenr - 1], new GanttTask() { Start = DateTime.Now.AddMinutes(start), End = DateTime.Now.AddMinutes(end), Name = name });
+            // ganttControl1.AddGanttTask(RowList[machinenr - 1], new GanttTask() { Start = DateTime.Now.AddHours(start), End = DateTime.Now.AddHours(end), Name = name });
+            ganttControl1.AddGanttTask(RowList[machinenr - 1], new GanttTask() { Start = new DateTime(2016, 12, 20, 00, 00, 00).AddHours(start), End = new DateTime(2016, 12, 20, 00, 00, 00).AddHours(end), Name = name });
         }
 
         void ReadFile()
@@ -236,6 +303,12 @@ namespace GanttDemo
                 Kolejka.Add(tmp);
                 j += 3;
             }
+        }
+
+        private void AppClosing(object sender, FormClosingEventArgs e)
+        {
+            if (watek_1.IsAlive) watek_1.Abort();
+            if (watek_2.IsAlive) watek_2.Abort();
         }
     }
 }

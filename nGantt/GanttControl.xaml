@@ -34,7 +34,7 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ItemsControl ItemsSource="{Binding Path=Items}" VerticalAlignment="Center" VerticalContentAlignment="Stretch" Height="{Binding ElementName=Scroller, Path=ExtentHeight}">
+                        <ItemsControl ItemsSource="{Binding Path=Items}" VerticalAlignment="Center" VerticalContentAlignment="Stretch"  Height="{Binding ElementName=Scroller, Path=ExtentHeight}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <ng:GanttRowPanel DataContext="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}}" MinDate="{Binding Path=GanttData.MinDate}" MaxDate="{Binding Path=GanttData.MaxDate}"/>
@@ -103,7 +103,7 @@
                     <RowDefinition Height="1"></RowDefinition>
                 </Grid.RowDefinitions>
                 <TextBlock Grid.Column="0" Grid.Row="0" Text="{Binding Path=RowHeader.Name}" ToolTip="{Binding Path=RowHeader.Name}" Margin="15,5,0,0" TextWrapping="Wrap"></TextBlock>
-                <Grid Name="RowGrid" Grid.Column="2" Grid.Row="0" Width="Auto" Height="{Binding ElementName=RowHeightSlider, Path=Value}" Margin="0,5,0,5">
+                <Grid Name="RowGrid" Grid.Column="2" Grid.Row="0" Width="auto" Height="{Binding ElementName=RowHeightSlider, Path=Value}" Margin="0,5,0,5">
                     <Grid.RowDefinitions>
                         <RowDefinition Height="{Binding ElementName=RowHeightSlider, Path=Value}" />
                     </Grid.RowDefinitions>
@@ -183,9 +183,9 @@
                                         <StackPanel Orientation="Vertical">
                                             <Label Content="{Binding Path=Name}" FontWeight="Bold"></Label>
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding Path=Start, StringFormat={}{0:HH:mm d.MM.yyyy}}"/>
+                                                <TextBlock Text="{Binding Path=Start, StringFormat={}{0:HH:mm }}"/>
                                                 <TextBlock Text=" -> "/>
-                                                <TextBlock Text="{Binding Path=End, StringFormat={}{0:HH:mm d.MM.yyyy}}"/>
+                                                <TextBlock Text="{Binding Path=End, StringFormat={}{0:HH:mm }}"/>
                                             </StackPanel>
                                         </StackPanel>
                                     </Border.ToolTip>
@@ -262,7 +262,7 @@
             <Grid>
                 <Expander Template="{StaticResource ExpanderWithoutButton}" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0" Padding="0" BorderThickness="0" IsExpanded="{Binding Path=IsExpanded}">
                     <Expander.Header>
-                        <Border HorizontalAlignment="Left" Margin="0" BorderThickness="0,1,0,1" Opacity="0.7" CornerRadius="0" Background="WhiteSmoke" BorderBrush="DarkGray" Height="25" Padding="3" Width="{Binding ElementName=Scroller, Path=ActualWidth}">
+                        <Border HorizontalAlignment="Left" Margin="0" BorderThickness="0,1,0,1" Opacity="0.7" CornerRadius="0" Background="WhiteSmoke" BorderBrush="DarkGray" Height="25"  Padding="3" Width="{Binding ElementName=RowWidthSlider, Path=Value}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="auto"/>
@@ -273,7 +273,7 @@
                                 <ToggleButton Grid.Column="2" VerticalAlignment="Center"  IsChecked="{Binding IsExpanded, Mode=TwoWay, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type Expander}}}">
                                     <ToggleButton.Template>
                                         <ControlTemplate>
-                                            <TextBlock Text="{Binding Path=Name}"  FontWeight="Bold" HorizontalAlignment="Left" />
+                                            <TextBlock Text="{Binding Path=Name}"  FontWeight="Bold" HorizontalAlignment="Left"  />
                                         </ControlTemplate>
                                     </ToggleButton.Template>
                                 </ToggleButton>
@@ -314,7 +314,7 @@
                     <RowDefinition Height="auto"></RowDefinition>
                     <RowDefinition Height="auto"></RowDefinition>
                 </Grid.RowDefinitions>
-                <Border HorizontalAlignment="Left" BorderThickness="0,1,0,1" CornerRadius="0" Opacity="0.7" Background="WhiteSmoke" Height="25" BorderBrush="DarkGray" Padding="3" Width="{Binding ElementName=Scroller, Path=ActualWidth}">
+                <Border HorizontalAlignment="Left" BorderThickness="0,1,0,1" CornerRadius="0" Opacity="0.7" Background="WhiteSmoke" Height="25" BorderBrush="DarkGray" Padding="3" Width="{Binding ElementName=RowWidthSlider, Path=Value}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="auto"/>
@@ -364,6 +364,7 @@
             </Grid>
         </DataTemplate>
 
+     
         <DataTemplate x:Key="GanttGrid">
             <Grid Name="GanttMainGrid">
                 <Grid.RowDefinitions>
@@ -377,17 +378,20 @@
                     <ColumnDefinition Width="*"></ColumnDefinition>
                 </Grid.ColumnDefinitions>
 
-                <!-- TimeLines -->
-                <ContentControl Grid.Row="0" BorderBrush="Blue" BorderThickness="1"  Grid.Column="1" Grid.ColumnSpan="2" ContentTemplate="{StaticResource GanttTimeLineTemplate}" Content="{Binding Path=TimeLines}" Margin="0,0,18,0"/>
-                <!-- Support rows -->
+                <!-- Support rows --><!--
                 <Rectangle Grid.Row="0" Grid.Column="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Gray"/>
-                <Rectangle Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Gray"/>
-                <ScrollViewer Name="Scroller" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.Row="2" Grid.ColumnSpan="3">
+                <Rectangle Grid.Row="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Fill="Gray"/>-->
+                <ScrollViewer Name="Scroller" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Visible" Grid.Row="0" Grid.ColumnSpan="3">
                     <Grid>
+                        <!-- TimeLines -->
+                        <ContentControl Grid.Row="0" BorderBrush="Blue" BorderThickness="1"  Grid.Column="1" Grid.ColumnSpan="2" ContentTemplate="{StaticResource GanttTimeLineTemplate}"  Content="{Binding Path=TimeLines}" Margin="100,0,1,0"/>
+
+                        <Line X1="120" Y1="75" X2="120" Y2="360" Stroke="Black" StrokeThickness="2" />
                         <!-- Gridlines -->
                         <ContentControl ContentTemplate="{StaticResource GanttTimeLineGridLines}" Content="{Binding RelativeSource={RelativeSource Mode=FindAncestor, AncestorType={x:Type UserControl}}, Path=GridLineTimeLine}" Margin="100,0,1,0"/>
                         <!-- RowGroups -->
                         <ItemsControl ItemsSource="{Binding Path=RowGroups}"/>
+                        
                     </Grid>
                 </ScrollViewer>
             </Grid>

@@ -59,6 +59,7 @@
     <Compile Include="GanttChart\GanttRowPanel.cs" />
     <Compile Include="GanttChart\GanttTask.cs" />
     <Compile Include="GanttChart\HeaderedGanttRowGroup.cs" />
+    <Compile Include="GanttChart\Line.cs" />
     <Compile Include="GanttChart\PeriodEventArgs.cs" />
     <Compile Include="GanttChart\SelectionContextMenuItemClick.cs" />
     <Compile Include="PeriodSplitter\Period.cs" />
